@@ -19,7 +19,9 @@ jobs:
     steps:
       - name: Check User membership
         if: github.event_name == 'workflow_dispatch' && github.actor == 'rayanki0206'
-        run: echo "Triggered by ${{ github.actor }}"
+        run: |
+          echo "Triggered by ${{ github.actor }}"
+          exit 0
 
       - name: Generate GitHub App Token
         id: generate-token
