@@ -1,36 +1,63 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+  Security_check:
+    name: Security Check
+    runs-on: self-hosted
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      
+      - name: Generate a token
+        if : github.event_name == 'workflow_dispatch'
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      # Runs a single command using the runners shell
+      - name: Check DAT-DAPP-ADMINS User Membership
+        if : github.event_name == 'workflow_dispatch'
+        uses: marcocarvalho/team-membership@v3
+        id: checkUserMember
+        with:
+          username: ${{ github.actor }}
+          team: 'DAT-DAPP-ADMINS'
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token}}
+
+      - if: ${{ steps.checkUserMember.outputs.isTeamMember == 'true' }}
+        run: exit 0
+
+      - if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
+        run: exit 1
+
+  
+      - name: Check DAT-DAPP-ADMINS User Membership
+        if: github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'
+        uses: marcocarvalho/team-membership@v3
+        id: checkPRUserMember
+        with:
+          username: ${{ github.event.review.user.login }}
+          team: 'DAT-DAPP-ADMINS'
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+  
+      - name: Verify PR Approval by DAT-DAPP-ADMINS
+        if: github.event_name == 'pull_request_review' && github.event.action == 'submitted' && steps.checkPRUserMember.outputs.isTeamMember == 'true'
+        run: |
+          echo "PR is approved by a member of DAT-DAPP-ADMINS."
+  
+      - name: Exit if not approved by DAT-DAPP-ADMINS
+        if: github.event_name == 'pull_request_review' && github.event.action == 'submitted' && steps.checkUserMember.outputs.isTeamMember == 'false'
+        run: exit 1
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
       - name: Run a one-line script
         run: echo Hello, world!
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
