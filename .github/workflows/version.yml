@@ -48,7 +48,7 @@ jobs:
       run: exit 1
       
   build:
-    needs: [security_check]
+    needs: security_check
     runs-on: ubuntu-latest
     
     steps:
