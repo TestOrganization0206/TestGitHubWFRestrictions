@@ -17,45 +17,42 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    
-    - name: Check User membership
-      if: github.event_name == 'workflow_dispatch' && github.actor == 'rayanki0206'
-      run: echo "Triggered by ${{ github.actor }}"
-    
-    - name: Generate GitHub App Token
-      id: generate-token
-      uses: actions/create-github-app-token@v1
-      with:
-        app-id: ${{ secrets.APP_ID }}
-        private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Check User membership
+        if: github.event_name == 'workflow_dispatch' && github.actor == 'rayanki0206'
+        run: echo "Triggered by ${{ github.actor }}"
 
-    - name: Check GitHubTeam_Test User Membership
-      if: github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'
-      uses: marcocarvalho/team-membership@v3
-      id: checkUserMember
-      with:
-        username: ${{ github.event.review.user.login }}
-        team: 'GitHubTeam_Test'
-        GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-    - name: Verify PR Approval by GitHubTeam_Test
-      if: github.event_name == 'pull_request_review' && github.event.action == 'submitted' && steps.checkUserMember.outputs.isTeamMember == 'true'
-      run: |
-        echo "PR is approved by a member of GitHubTeam_Test."
+      - name: Check GitHubTeam_Test User Membership
+        if: github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'
+        uses: marcocarvalho/team-membership@v3
+        id: checkUserMember
+        with:
+          username: ${{ github.event.review.user.login }}
+          team: 'GitHubTeam_Test'
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
 
-    - name: Exit if not approved by GitHubTeam_Test
-      if: github.event_name == 'pull_request_review' && github.event.action == 'submitted' && steps.checkUserMember.outputs.isTeamMember == 'false'
-      run: exit 1
+      - name: Verify PR Approval by GitHubTeam_Test
+        if: github.event_name == 'pull_request_review' && github.event.action == 'submitted' && steps.checkUserMember.outputs.isTeamMember == 'true'
+        run: |
+          echo "PR is approved by a member of GitHubTeam_Test."
+
+      - name: Exit if not approved by GitHubTeam_Test
+        if: github.event_name == 'pull_request_review' && github.event.action == 'submitted' && steps.checkUserMember.outputs.isTeamMember == 'false'
+        run: exit 1
       
   build:
     needs: security_check
     runs-on: ubuntu-latest
     
     steps:
-    
       - name: Checkout source code
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
       
       - name: Run a one-line script
         run: echo Hello, world from Version!
-
