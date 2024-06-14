@@ -21,8 +21,8 @@ jobs:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Check GitHubTeam_Test User Membership
-        if: github.event_name == 'workflow_dispatch'
+      - name: Check GitHubTeam_Test User Membership - Workflow_dispatch
+        # if: github.event_name == 'workflow_dispatch'
         uses: marcocarvalho/team-membership@v3
         id: checkUserMember
         with:
@@ -30,7 +30,7 @@ jobs:
           team: 'GitHubTeam_Test'
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
 
-      - name: Exit if member
+      - name: Execute workflow if member
         if: ${{ steps.checkUserMember.outputs.isTeamMember == 'true' }}
         run: exit 0
 
@@ -45,7 +45,7 @@ jobs:
         with:
           username: ${{ github.event.review.user.login }}
           team: 'GitHubTeam_Test'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use a different token or generated token if available
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }} # Use a different token or generated token if available
 
       - name: Verify PR Approval by GitHubTeam_Test
         if: github.event_name == 'pull_request_review' && github.event.action == 'submitted' && steps.checkPRUserMember.outputs.isTeamMember == 'true'
