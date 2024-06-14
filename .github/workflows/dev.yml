@@ -30,11 +30,11 @@ jobs:
           team: 'GitHubTeam_Test'
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
 
-      - name: Exit if member
+      - name: Execute workflow if user is member of DAT-DAPP-ADMINS
         if: ${{ steps.checkUserMember.outputs.isTeamMember == 'true' }}
         run: exit 0
 
-      - name: Exit if not a member
+      - name: Terminate if user is not member of DAT-DAPP-ADMINS
         if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
         run: exit 1
 
