@@ -44,7 +44,7 @@ jobs:
         with:
           username: ${{ github.event.review.user.login }}
           team: 'GitHubTeam_Test'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use a different token or generated token if available
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }} # Use a different token or generated token if available
 
       - name: Verify PR Approval by GitHubTeam_Test
         if: github.event_name == 'pull_request_review' && github.event.action == 'submitted' && steps.checkPRUserMember.outputs.isTeamMember == 'true'
