@@ -21,6 +21,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && github.actor != 'rayanki0206'
         run: |
           echo "Triggered by ${{ github.actor }}"
+          exit 1
 
       - name: Generate GitHub App Token
         if: github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'
