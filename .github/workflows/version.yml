@@ -20,7 +20,7 @@ jobs:
       - name: Check User membership
         if: github.event_name == 'workflow_dispatch' && github.actor != 'rayanki0206'
         run: |
-          echo "Triggered by ${{ github.actor }}"
+          echo "You don't have access to manual trigger this workflow file"
           exit 1
 
       - name: Generate GitHub App Token
