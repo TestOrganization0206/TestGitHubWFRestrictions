@@ -18,12 +18,12 @@ jobs:
     
     steps:
       - name: Check User membership
-        if: github.event_name == 'workflow_dispatch' && github.actor == 'rayanki0206'
+        if: github.event_name == 'workflow_dispatch' && github.actor != 'rayanki0206'
         run: |
           echo "Triggered by ${{ github.actor }}"
-          exit 0
 
       - name: Generate GitHub App Token
+        if: github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'
         id: generate-token
         uses: actions/create-github-app-token@v1
         with:
@@ -31,7 +31,6 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Check GitHubTeam_Test User Membership
-        if: github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'
         uses: marcocarvalho/team-membership@v3
         id: checkUserMember
         with:
