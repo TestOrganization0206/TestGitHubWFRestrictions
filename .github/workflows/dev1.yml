@@ -1,0 +1,81 @@
+name: Deploy Dev
+on:
+  workflow_dispatch:
+
+  pull_request_review:
+    branches:
+      - main
+    types: [submitted]
+
+jobs:
+  security_check:
+    name: Security Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate a token
+        if: github.event_name == 'workflow_dispatch'
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Check GitHubTeam_Test User Membership
+        if: github.event_name == 'workflow_dispatch'
+      #   uses: marcocarvalho/team-membership@v3
+      #   id: checkUserMember
+      #   with:
+      #     username: ${{ github.actor }}
+      #     team: 'GitHubTeam_Test'
+      #     GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+
+      # - name: Exit if member
+      #   if: ${{ steps.checkUserMember.outputs.isTeamMember == 'true' }}
+      #   run: exit 0
+
+      # - name: Exit if not a member
+      #   if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
+      #   run: exit 1
+
+
+        id: check_membership
+        run: |
+          USERNAME= ${{ github.actor }}
+          ORG= "elanco"
+          TEAM_SLUG= "GitHubTeam_Test" 
+  
+          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" "https://api.github.com/orgs/$ORG/teams/$TEAM_SLUG/memberships/$USERNAME")
+          STATE=$(echo $RESPONSE | jq -r '.state')
+
+          if [ "$STATE" != "active" ]; then
+            echo "User is not an active member of the team."
+            exit 1
+          else
+            echo "User is an active member of the team."
+          fi
+      - name: Check GitHubTeam_Test User Membership on PR Review
+        if: github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'
+        uses: marcocarvalho/team-membership@v3
+        id: checkPRUserMember
+        with:
+          username: ${{ github.event.review.user.login }}
+          team: 'GitHubTeam_Test'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use a different token or generated token if available
+
+      - name: Verify PR Approval by GitHubTeam_Test
+        if: steps.checkPRUserMember.outputs.isTeamMember == 'true'
+        run: |
+          echo "PR is approved by a member of GitHubTeam_Test."
+      - name: Exit if not approved by GitHubTeam_Test
+        if: steps.checkPRUserMember.outputs.isTeamMember == 'false'
+        run: exit 1
+
+  build:
+    needs: security_check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run a one-line script
+        run: echo Hello, world for DEV!
