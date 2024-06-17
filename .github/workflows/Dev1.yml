@@ -24,8 +24,8 @@ jobs:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Check GitHubTeam_Test User Membership
-        if: github.event_name == 'workflow_dispatch'
+      # - name: Check GitHubTeam_Test User Membership
+      #   if: github.event_name == 'workflow_dispatch'
       #   uses: marcocarvalho/team-membership@v3
       #   id: checkUserMember
       #   with:
@@ -42,21 +42,45 @@ jobs:
       #   run: exit 1
 
       
+        # id: check_membership
+        # run: |
+        #   USERNAME=${{ github.actor }}
+        #   ORG="elanco"
+        #   Team_Name="GitHubTeam_Test" 
+  
+        #   RESPONSE=$(curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" "https://api.github.com/orgs/$ORG/teams/$Team_Name/memberships/$USERNAME")
+        #   STATE=$(echo $RESPONSE | jq -r '.state')
+  
+        #   if [ "$STATE" != "active" ]; then
+        #     echo "User is not an active member of the team."
+        #     exit 1
+        #   else
+        #     echo "User is an active member of the team."
+        #   fi
+      - name: Check GitHubTeam_Test User Membership
+        if: github.event_name == 'workflow_dispatch'
         id: check_membership
         run: |
-          USERNAME=${{ github.actor }}
-          ORG="elanco"
-          Team_Name="GitHubTeam_Test" 
-  
-          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" "https://api.github.com/orgs/$ORG/teams/$Team_Name/memberships/$USERNAME")
-          STATE=$(echo $RESPONSE | jq -r '.state')
-  
-          if [ "$STATE" != "active" ]; then
-            echo "User is not an active member of the team."
+          $USERNAME = "${{ github.actor }}"
+          $ORG = "elanco"
+          $TEAM_SLUG = "GitHubTeam_Test"
+      
+          $headers = @{
+            Authorization = "Bearer ${{ steps.generate-token.outputs.token }}"
+          }
+      
+          $url = "https://api.github.com/orgs/$ORG/teams/$TEAM_SLUG/memberships/$USERNAME"
+          $response = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
+          $state = $response.state
+      
+          if ($state -ne "active") {
+            Write-Output "User is not an active member of the team."
             exit 1
-          else
-            echo "User is an active member of the team."
-          fi
+          } else {
+            Write-Output "User is an active member of the team."
+          }
+        shell: pwsh
+
       - name: Check GitHubTeam_Test User Membership on PR Review
         if: github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'
         uses: marcocarvalho/team-membership@v3
