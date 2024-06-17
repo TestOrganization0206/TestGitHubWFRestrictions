@@ -62,7 +62,7 @@ jobs:
         id: check_membership
         run: |
           $USERNAME = "${{ github.actor }}"
-          $ORG = "elanco"
+          $ORG = "${{ github.repository_owner }}"
           $TEAM_SLUG = "GitHubTeam_Test"
       
           $headers = @{
