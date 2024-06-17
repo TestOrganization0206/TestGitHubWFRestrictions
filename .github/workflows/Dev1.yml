@@ -13,8 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Install jq
-        run: sudo apt-get install -y jq
         
       - name: Generate a token
         if: github.event_name == 'workflow_dispatch'
@@ -41,22 +39,6 @@ jobs:
       #   if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
       #   run: exit 1
 
-      
-        # id: check_membership
-        # run: |
-        #   USERNAME=${{ github.actor }}
-        #   ORG="elanco"
-        #   Team_Name="GitHubTeam_Test" 
-  
-        #   RESPONSE=$(curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" "https://api.github.com/orgs/$ORG/teams/$Team_Name/memberships/$USERNAME")
-        #   STATE=$(echo $RESPONSE | jq -r '.state')
-  
-        #   if [ "$STATE" != "active" ]; then
-        #     echo "User is not an active member of the team."
-        #     exit 1
-        #   else
-        #     echo "User is an active member of the team."
-        #   fi
       - name: Check GitHubTeam_Test User Membership
         if: github.event_name == 'workflow_dispatch'
         id: check_membership
@@ -83,21 +65,43 @@ jobs:
 
       - name: Check GitHubTeam_Test User Membership on PR Review
         if: github.event_name == 'pull_request_review' && github.event.review.state == 'APPROVED'
-        uses: marcocarvalho/team-membership@v3
-        id: checkPRUserMember
-        with:
-          username: ${{ github.event.review.user.login }}
-          team: 'GitHubTeam_Test'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use a different token or generated token if available
+      #   uses: marcocarvalho/team-membership@v3
+      #   id: checkPRUserMember
+      #   with:
+      #     username: ${{ github.event.review.user.login }}
+      #     team: 'GitHubTeam_Test'
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use a different token or generated token if available
 
-      - name: Verify PR Approval by GitHubTeam_Test
-        if: steps.checkPRUserMember.outputs.isTeamMember == 'true'
+      # - name: Verify PR Approval by GitHubTeam_Test
+      #   if: steps.checkPRUserMember.outputs.isTeamMember == 'true'
+      #   run: |
+      #     echo "PR is approved by a member of GitHubTeam_Test."
+
+      # - name: Exit if not approved by GitHubTeam_Test
+      #   if: steps.checkPRUserMember.outputs.isTeamMember == 'false'
+      #   run: exit 1
+
+        id: check_PR_membership
         run: |
-          echo "PR is approved by a member of GitHubTeam_Test."
-
-      - name: Exit if not approved by GitHubTeam_Test
-        if: steps.checkPRUserMember.outputs.isTeamMember == 'false'
-        run: exit 1
+          $USERNAME = "${{ github.actor }}"
+          $ORG = "${{ github.repository_owner }}"
+          $TEAM_SLUG = "GitHubTeam_Test"
+      
+          $headers = @{
+            Authorization = "Bearer ${{ steps.generate-token.outputs.token }}"
+          }
+      
+          $url = "https://api.github.com/orgs/$ORG/teams/$TEAM_SLUG/memberships/$USERNAME"
+          $response = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
+          $state = $response.state
+      
+          if ($state -ne "active") {
+            Write-Output "PR approved User is not an active member of the team."
+            exit 1
+          } else {
+            Write-Output "PR approved User is an active member of the team."
+          }
+        shell: pwsh
 
   build:
     needs: security_check
