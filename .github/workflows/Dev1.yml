@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Install jq
+        run: sudo apt-get install -y jq
+        
       - name: Generate a token
         if: github.event_name == 'workflow_dispatch'
         id: generate-token
@@ -41,11 +44,11 @@ jobs:
       
         id: check_membership
         run: |
-          USERNAME= ${{ github.actor }}
-          ORG= "elanco"
-          TEAM_SLUG= "GitHubTeam_Test" 
+          USERNAME=${{ github.actor }}
+          ORG="elanco"
+          Team_Name="GitHubTeam_Test" 
   
-          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" "https://api.github.com/orgs/$ORG/teams/$TEAM_SLUG/memberships/$USERNAME")
+          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ steps.generate-token.outputs.token }}" "https://api.github.com/orgs/$ORG/teams/$Team_Name/memberships/$USERNAME")
           STATE=$(echo $RESPONSE | jq -r '.state')
   
           if [ "$STATE" != "active" ]; then
