@@ -13,14 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-        
-      - name: Generate a token
-        if: github.event_name == 'workflow_dispatch'
-        id: generate-token
-        uses: actions/create-github-app-token@v1
+
+      - name: Login to Azure
+        uses: azure/login@v1
         with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+      # - name: Generate a token
+      #   if: github.event_name == 'workflow_dispatch'
+      #   id: generate-token
+      #   uses: actions/create-github-app-token@v1
+      #   with:
+      #     app-id: ${{ vars.APP_ID }}
+      #     private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # - name: Check GitHubTeam_Test User Membership
       #   if: github.event_name == 'workflow_dispatch'
@@ -39,6 +44,11 @@ jobs:
       #   if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
       #   run: exit 1
 
+      - name: Get secret from Azure Key Vault
+        id: get-secret
+        run: |
+          SECRET=$(az keyvault secret show --name ${{ secrets.SECRET_NAME }} --vault-name ${{ secrets.AZURE_KEY_VAULT_NAME }} --query value -o tsv)
+
       - name: Check GitHubTeam_Test User Membership
         if: github.event_name == 'workflow_dispatch'
         id: check_membership
@@ -48,7 +58,7 @@ jobs:
           $TEAM_SLUG = "GitHubTeam_Test"
       
           $headers = @{
-            Authorization = "Bearer ${{ secrets.TOKEN_GITHUB }}"
+            Authorization = "Bearer ${{ steps.get-secret.outputs.SECRET }}"
           }
       
           $url = "https://api.github.com/orgs/$ORG/teams/$TEAM_SLUG/memberships/$USERNAME"
@@ -88,7 +98,7 @@ jobs:
           $TEAM_SLUG = "GitHubTeam_Test"
       
           $headers = @{
-            Authorization = "Bearer ${{ secrets.TOKEN_GITHUB }}"
+            Authorization = "Bearer ${{ steps.get-secret.outputs.SECRET }}"
           }
       
           $url = "https://api.github.com/orgs/$ORG/teams/$TEAM_SLUG/memberships/$USERNAME"
