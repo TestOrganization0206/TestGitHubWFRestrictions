@@ -48,7 +48,7 @@ jobs:
         id: get-secret
         run: |
           secret=$(az keyvault secret show --name "GitPAT" --vault-name "TestKeyvault0206" --query value -o tsv)
-          # echo "::set-output name=secret::$SECRET"
+          echo "SECRET=$secret" >> "$GITHUB_OUTPUT"
 
       - name: Check GitHubTeam_Test User Membership
         if: github.event_name == 'workflow_dispatch'
@@ -59,7 +59,7 @@ jobs:
           $TEAM_SLUG = "GitHubTeam_Test"
       
           $headers = @{
-            Authorization = "Bearer ${{ steps.get-secret.outputs.secret }}"
+            Authorization = "Bearer ${{ steps.get-secret.outputs.SECRET }}"
           }
       
           $url = "https://api.github.com/orgs/$ORG/teams/$TEAM_SLUG/memberships/$USERNAME"
