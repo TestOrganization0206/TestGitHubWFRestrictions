@@ -47,7 +47,7 @@ jobs:
       - name: Get secret from Azure Key Vault
         id: get-secret
         run: |
-          SECRET=$(az keyvault secret show --name ${{ secrets.SECRET_NAME }} --vault-name ${{ secrets.AZURE_KEY_VAULT_NAME }} --query value -o tsv)
+          SECRET=$(az keyvault secret show --name "GitPAT" --vault-name "TestKeyvault0206" --query value -o tsv)
 
       - name: Check GitHubTeam_Test User Membership
         if: github.event_name == 'workflow_dispatch'
