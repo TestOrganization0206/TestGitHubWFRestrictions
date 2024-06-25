@@ -10,14 +10,14 @@ on:
 jobs:
   security_check:
     name: Security Check
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     
     steps:
 
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # - name: Login to Azure
+      #   uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
         
       # - name: Generate a token
       #   if: github.event_name == 'workflow_dispatch'
@@ -34,7 +34,7 @@ jobs:
       #   with:
       #     username: ${{ github.actor }}
       #     team: 'GitHubTeam_Test'
-      #     GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: Exit if member
       #   if: ${{ steps.checkUserMember.outputs.isTeamMember == 'true' }}
@@ -44,11 +44,11 @@ jobs:
       #   if: ${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}
       #   run: exit 1
 
-      - name: Get secret from Azure Key Vault
-        id: get-secret
-        run: |
-          secret=$(az keyvault secret show --name "GitPAT" --vault-name "TestKeyvault0206" --query value -o tsv)
-          echo "SECRET=$secret" >> "$GITHUB_OUTPUT"
+      # - name: Get secret from Azure Key Vault
+      #   id: get-secret
+      #   run: |
+      #     secret=$(az keyvault secret show --name "GitPAT" --vault-name "TestKeyvault0206" --query value -o tsv)
+      #     echo "SECRET=$secret" >> "$GITHUB_OUTPUT"
 
       - name: Check GitHubTeam_Test User Membership
         if: github.event_name == 'workflow_dispatch'
@@ -59,7 +59,7 @@ jobs:
           $TEAM_SLUG = "GitHubTeam_Test"
       
           $headers = @{
-            Authorization = "Bearer ${{ steps.get-secret.outputs.SECRET }}"
+            Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}"
           }
       
           $url = "https://api.github.com/orgs/$ORG/teams/$TEAM_SLUG/memberships/$USERNAME"
