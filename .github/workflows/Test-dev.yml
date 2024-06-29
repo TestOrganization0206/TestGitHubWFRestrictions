@@ -7,7 +7,7 @@ on:
 jobs:
   check_github_context:
     name: check github context
-    runs-on: unbuntu-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: check github contxt for github.event
