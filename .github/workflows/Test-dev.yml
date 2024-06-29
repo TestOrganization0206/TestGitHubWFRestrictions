@@ -11,15 +11,15 @@ jobs:
 
     steps:
       - name: check github contxt for github.event
-        if: github.event_name == 'workflow_disptach'
+        if: github.event == 'workflow_dispatch'
         run: echo "This workflow is triggered by the event of workflow_dispatch
         
       - name: check github contxt for github.event
-        if: github.event_name == 'pull_request'
+        if: github.event == 'pull_request'
         run: echo "This workflow is triggered by the event of pull_request"
 
       - name: check github contxt for github.event
-        if: github.event_name == 'pull_request'
+        if: github.event == 'pull_request'
         run: echo "This workflow is triggered by the event of workflow_dispatch"
 
       
