@@ -29,7 +29,7 @@ jobs:
           organization: ${{ github.repository_owner }}
           username: ${{ github.actor }}
           team: 'GitHubTeam_Test'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
 
       - if: steps.checkUserMember.outputs.isTeamMember == 'true' 
         run: exit 0
@@ -46,7 +46,7 @@ jobs:
           organization: ${{ github.repository_owner }}
           username: ${{ github.event.review.user.login }}
           team: 'GitHubTeam_Test'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }} 
 
       - if: github.event_name == 'pull_request_review' && github.event.action == 'submitted' &&  steps.checkPRUserMember.outputs.isTeamMember == 'true'
         run: exit 0
