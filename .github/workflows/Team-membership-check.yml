@@ -28,8 +28,8 @@ jobs:
         with:
           organization: ${{ github.repository_owner }}
           username: ${{ github.actor }}
-          team: 'DAT-DAPP-ADMINS'
-          GITHUB_TOKEN: ${{ secrets.DAPP_PAT_TOKEN_GITHUB }}
+          team: 'GitHubTeam_Test'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - if: steps.checkUserMember.outputs.isTeamMember == 'true' 
         run: exit 0
@@ -45,8 +45,8 @@ jobs:
         with:
           organization: ${{ github.repository_owner }}
           username: ${{ github.event.review.user.login }}
-          team: 'DAT-DAPP-ADMINS'
-          GITHUB_TOKEN: ${{ secrets.DAPP_PAT_TOKEN_GITHUB }} 
+          team: 'GitHubTeam_Test'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
       - if: github.event_name == 'pull_request_review' && github.event.action == 'submitted' &&  steps.checkPRUserMember.outputs.isTeamMember == 'true'
         run: exit 0
