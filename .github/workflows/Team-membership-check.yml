@@ -28,6 +28,7 @@ jobs:
         with:
           username: ${{ github.actor }}
           team: 'GitHubTeam_Test'
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB}}
 
       - if: steps.checkUserMember.outputs.isTeamMember == 'true' 
         run: exit 0
